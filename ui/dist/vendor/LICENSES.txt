@@ -1,0 +1,14 @@
+RootreX bundles / adapts these third-party front-end components.
+Full notices: see THIRD_PARTY_NOTICES.md in the repository root.
+
+------------------------------------------------------------------------
+GSAP 3.12.5  —  GreenSock Standard "No Charge" License
+Copyright 2024, GreenSock. All rights reserved.
+Vendored unmodified as gsap.min.js.
+https://gsap.com/standard-license/
+------------------------------------------------------------------------
+Evil Eye background (../eye.js)  —  MIT License
+Ported (reimplemented without React/OGL) from "evil-aye" by
+Sebastián Vásquez Echavarría.
+https://github.com/sebastianvasquezechavarria1234/evil-aye
+------------------------------------------------------------------------

@@ -1,0 +1,7 @@
+# Test dependencies. The GUI (pywebview) and AP (winsdk) packages are NOT needed
+# to run the suite — network I/O is stubbed and those modules degrade gracefully.
+scapy>=2.5.0
+fastapi>=0.110
+mac-vendor-lookup>=0.1.12
+pytest>=8.0
+httpx>=0.27

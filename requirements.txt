@@ -1,0 +1,14 @@
+# RootreX — Python engine dependencies (Windows)
+# Install into a venv:  pip install -r requirements.txt
+# Also required (not pip): Npcap >= 1.3.0 (https://npcap.com, WinPcap-compatible
+# mode). RootreX detects it on launch and offers an in-app downloader if missing.
+
+scapy>=2.5.0            # raw packet capture/send over Npcap (scanner, jammer, observer)
+fastapi>=0.110          # loopback control API
+uvicorn[standard]>=0.29 # ASGI server for FastAPI + WebSocket
+pystray>=0.19           # system-tray icon; the UI opens in the default browser
+pillow>=10.0            # tray-icon image
+mac-vendor-lookup>=0.1.12  # offline OUI -> vendor for the scanner
+cryptography>=42.0         # QUIC Initial decryption for HTTP/3 SNI recovery
+# Test-AP (Mobile Hotspot) control uses PowerShell WinRT at runtime — no `winsdk`
+# wheel is needed (winsdk has no Python 3.13 build).

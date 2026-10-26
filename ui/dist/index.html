@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RootreX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- the watching eye, behind everything -->
+  <canvas id="eye-bg" aria-hidden="true"></canvas>
+  <button id="eye-toggle" title="Collapse everything to the eye — click again to restore" aria-label="Toggle panels">◉</button>
+
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">R<b>OO</b>TRE<b>X</b></span>
+        <span class="tag">WiFi Visibility &amp; Control · Lab</span>
+      </div>
+      <div class="ctx" id="ctx">
+        <div class="cell"><span class="k">Interface</span><span class="v" id="ctx-iface">—</span></div>
+        <div class="cell"><span class="k">This host</span><span class="v" id="ctx-local">—</span></div>
+        <div class="cell"><span class="k">Gateway</span><span class="v" id="ctx-gw">—</span></div>
+        <div class="cell"><span class="k">Subnet</span><span class="v" id="ctx-cidr">—</span></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="consent-chip" id="consent-chip"><span class="dot"></span><span id="consent-text">No consent</span></div>
+      <button class="stop-btn" id="stop-all" disabled>STOP · Restore all</button>
+    </header>
+
+    <div id="preflight-bar" aria-live="polite"></div>
+
+    <nav class="tabs">
+      <button class="tab active" data-view="lan"><span class="idx">01</span> LAN · Route-through</button>
+      <button class="tab" data-view="ap"><span class="idx">02</span> Test-AP · Full-Observe</button>
+      <button class="tab" data-view="analytics"><span class="idx">03</span> Signal · Analytics</button>
+    </nav>
+
+    <main class="main">
+      <!-- MODE 1 -->
+      <section class="view active" id="view-lan">
+        <div class="cols">
+          <div class="panel">
+            <div class="phead">
+              <h2>Scanner</h2>
+              <span class="eyebrow" id="scan-sub">live device list</span>
+              <span class="count" id="dev-count">0 hosts</span>
+              <button class="btn" id="identify" title="Listen for device names via DHCP + UPnP (no routing)">Identify</button>
+              <button class="btn route" id="rescan">Rescan</button>
+            </div>
+            <div class="pbody">
+              <div id="lan-error"></div>
+              <table class="scan">
+                <thead>
+                  <tr><th>St</th><th>Device</th><th>IP</th><th>MAC</th><th>Vendor</th><th>Last</th><th style="text-align:right">Control</th></tr>
+                </thead>
+                <tbody id="dev-rows"></tbody>
+              </table>
+              <div class="empty" id="dev-empty"><div class="big">No hosts yet</div><div class="sub">Grant consent, then Rescan. Devices on <span id="e-cidr">the subnet</span> will populate here.</div></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="phead"><h2>Activity</h2><span class="eyebrow">destinations · routed devices</span><span class="tls-chip" title="We show destinations and metadata only — payload content stays encrypted.">⊘ content encrypted</span><button class="btn" id="clear-activity" title="Clear the captured destination log">Clear log</button></div>
+            <div class="pbody">
+              <div id="activity"></div>
+              <div class="empty" id="act-empty"><div class="big">No routed traffic</div><div class="sub">Toggle <b>Route</b> on a device to detour its traffic through this host and see the domains it reaches.</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODE 2 -->
+      <section class="view" id="view-ap">
+        <div class="ap-grid">
+          <div class="panel">
+            <div class="phead"><h2>Test-AP</h2><span class="eyebrow">your own access point</span></div>
+            <div class="pbody">
+              <div id="ap-error"></div>
+              <div class="field"><label for="ap-ssid">Network name (SSID)</label><input id="ap-ssid" class="mono" placeholder="RootreX-Lab" autocomplete="off" /></div>
+              <div class="field"><label for="ap-pass">Passphrase (≥ 8 chars)</label><input id="ap-pass" class="mono" type="text" placeholder="lab-passphrase" autocomplete="off" /></div>
+              <button class="btn-primary" id="ap-apply">Configure &amp; Start</button>
+              <div class="ap-status">
+                <div class="s"><div class="k">State</div><div class="v off" id="ap-state">off</div></div>
+                <div class="s"><div class="k">Clients</div><div class="v" id="ap-clients">0</div></div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:12px">
+                <button class="btn-ghost" id="ap-stop" style="flex:1">Stop AP</button>
+              </div>
+              <div class="hint">Devices join <b>deliberately</b> — this is your own AP, not a clone of anyone's network. Because this host is the gateway, the board at right is native capture, <b>no spoofing</b>. Windows needs upstream internet and caps at ~8 clients.</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="phead"><h2>Metadata board</h2><span class="eyebrow">per-device · destinations · volume · timing</span><span class="tls-chip" title="Destination + metadata only; encrypted content is not readable.">⊘ content encrypted</span><span class="count" id="ap-dev-count">0 devices</span><button class="btn" id="clear-ap" title="Clear the metadata board">Clear log</button></div>
+            <div class="pbody">
+              <div id="ap-board"></div>
+              <div class="empty" id="ap-empty"><div class="big">Awaiting clients</div><div class="sub">Start the Test-AP and join a device. Its full destination metadata appears here, grouped per device.</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODE 3 — analytics -->
+      <section class="view" id="view-analytics">
+        <div class="analytics">
+          <div class="kpi-row" id="kpi-row"></div>
+          <div class="charts-2">
+            <div class="panel">
+              <div class="phead"><h2>Signal</h2><span class="eyebrow">bandwidth · live</span><span class="count" id="sig-now">—</span></div>
+              <div class="pbody"><div id="signal-chart" class="chart"></div></div>
+            </div>
+            <div class="panel">
+              <div class="phead"><h2>Protocols</h2><span class="eyebrow">traffic by protocol</span></div>
+              <div class="pbody"><div id="proto-donut" class="chart"></div></div>
+            </div>
+          </div>
+          <div class="charts-2">
+            <div class="panel">
+              <div class="phead"><h2>Top talkers</h2><span class="eyebrow">devices by volume</span></div>
+              <div class="pbody"><div id="top-talkers"></div></div>
+            </div>
+            <div class="panel">
+              <div class="phead"><h2>Known devices</h2><span class="eyebrow">named · on this router</span><span class="count" id="known-count">0</span></div>
+              <div class="pbody"><div id="named-devices"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="statusrail">
+      <div class="seg">ENGINE <b id="st-engine">init…</b></div>
+      <div class="seg">JAMMING <b id="st-jam">0</b></div>
+      <div class="seg">ROUTED <b id="st-routed">0</b></div>
+      <div class="seg">RATE <div class="spark" id="spark"></div></div>
+      <div class="log" id="st-log">—</div>
+    </footer>
+  </div>
+
+  <div class="gate" id="gate">
+    <div class="card">
+      <span class="eyebrow">Authorization required</span>
+      <h2>Consented lab use only</h2>
+      <p class="lede">RootreX manipulates ARP and observes destinations on the local network. Confirm you are authorized before anything transmits.</p>
+      <ul>
+        <li>I own or am explicitly authorized to test this network.</li>
+        <li>Every device I target belongs to someone who has consented.</li>
+        <li>I will use this to learn and defend — not to surveil or disrupt.</li>
+      </ul>
+      <div class="field" style="margin-bottom:16px"><label for="consent-note">Session note (optional — logged)</label><input id="consent-note" class="mono" placeholder="e.g. home lab demo, 2 consenting devices" /></div>
+      <div class="acceptrow">
+        <button class="btn-primary" id="consent-accept">I am authorized — enable</button>
+        <span class="note">Everything restores on exit. STOP is always one click away.</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="eye.js"></script>
+  <script src="vendor/gsap.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

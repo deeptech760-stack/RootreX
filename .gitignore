@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual envs (anchored to repo root so ui/dist etc. are untouched)
+/.venv/
+/.build-venv/
+
+# PyInstaller output (root-level only — NOT ui/dist)
+/build/
+/dist/
+*.manifest
+
+# Inno Setup output
+/installer/Output/
+
+# Logs
+*.log
+
+# OS cruft
+Thumbs.db
+.DS_Store
+
+# Test cache
+.pytest_cache/
